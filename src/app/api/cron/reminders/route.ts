@@ -43,11 +43,15 @@ export async function GET(request: Request) {
     };
 
     // ===================================================
-    // 1. RECORDATORIO 24 HORAS ANTES
+    // 1. RECORDATORIOS DEL DÍA SIGUIENTE (Vercel cron diario)
     // ===================================================
     try {
-        const tomorrow = new Date(now.getTime() + 23 * 60 * 60 * 1000); // 23h from now
-        const tomorrowEnd = new Date(now.getTime() + 25 * 60 * 60 * 1000); // 25h from now
+        const tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(0, 0, 0, 0);
+
+        const tomorrowEnd = new Date(tomorrow);
+        tomorrowEnd.setHours(23, 59, 59, 999);
 
         const { data: citas24h } = await supabase
             .from("citas")
