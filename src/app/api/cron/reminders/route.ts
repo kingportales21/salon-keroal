@@ -2,15 +2,22 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendWhatsApp } from "@/lib/whatsapp";
 
-// Security: verify the request is from Vercel Cron
+// Security: verify the request is from Vercel Cron or manual test
 function verifyCron(request: Request): boolean {
-    const authHeader = request.headers.get("authorization");
     const cronSecret = process.env.CRON_SECRET;
 
     // If no CRON_SECRET is set, allow (for development)
     if (!cronSecret) return true;
 
-    return authHeader === `Bearer ${cronSecret}`;
+    // Check Bearer token (Vercel Cron sends this automatically)
+    const authHeader = request.headers.get("authorization");
+    if (authHeader === `Bearer ${cronSecret}`) return true;
+
+    // Check query param (for manual testing in browser)
+    const url = new URL(request.url);
+    if (url.searchParams.get("secret") === cronSecret) return true;
+
+    return false;
 }
 
 // Admin Supabase client (service role)
