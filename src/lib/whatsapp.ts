@@ -19,7 +19,19 @@ function getClient() {
 
 export async function sendWhatsApp(to: string, message: string) {
     const whatsappFrom = process.env.TWILIO_WHATSAPP_FROM || "whatsapp:+14155238886";
-    const toNumber = to.startsWith("whatsapp:") ? to : `whatsapp:${to}`;
+
+    // Clean the number
+    let cleanNumber = to.replace(/\s+/g, "");
+
+    // If it's a Spanish mobile number without country code, add +34
+    if (/^[67]\d{8}$/.test(cleanNumber)) {
+        cleanNumber = `+34${cleanNumber}`;
+    } else if (!cleanNumber.startsWith("+")) {
+        // Fallback: assume +34 if no + is provided at all
+        cleanNumber = `+34${cleanNumber}`;
+    }
+
+    const toNumber = `whatsapp:${cleanNumber}`;
 
     const twilioClient = getClient();
 
